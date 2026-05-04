@@ -6,7 +6,7 @@
 
 # invariant-lock
 
-Refuse execution unless the invariant file's hash and version both match the lock. The simplest possible defence against silent drift.
+Refuse execution unless the invariant file's hash and version both match the lock. The simplest possible defence against silent drift on the demonstrated path.
 
 **v0.1.0** | MIT License | Zero dependencies
 
@@ -14,7 +14,7 @@ Refuse execution unless the invariant file's hash and version both match the loc
 
 ## Why This Exists
 
-Invariants that silently change between versions are not invariants — they are suggestions. Systems that rely on governance rules need a way to prove that those rules have not been quietly modified between the time they were declared and the time they are enforced. `invariant-lock` binds a hash of the invariants file to an explicit version increment: if either has changed without the other, execution is refused. No gradual drift, no silent regressions, no ambiguity about which rules were in effect when something executed.
+Invariants that silently change between versions are not invariants — they are suggestions. Systems that rely on governance rules need a way to prove that those rules have not been quietly modified between the time they were declared and the time they are enforced. `invariant-lock` binds a hash of the invariants file to an explicit version increment: if either has changed without the other, execution is refused on the demonstrated path. No gradual drift, no silent regressions, no ambiguity inside that hash + version check surface.
 
 ---
 
@@ -33,7 +33,7 @@ Invariants that silently change between versions are not invariants — they are
                                           └─────────────┘
 ```
 
-**Fail-closed:** any mismatch blocks execution. No silent fallbacks.
+**Fail-closed on the demonstrated path:** any mismatch blocks execution. No silent fallbacks inside the lock check.
 
 ---
 
@@ -132,9 +132,24 @@ sha = compute_sha256("invariants.json")
 - ~130 LOC (implementation + CLI)
 - Zero dependencies (stdlib only)
 - SHA-256 hashing
-- All failures are explicit and typed
-- Fail-closed: no silent fallbacks
-- Deterministic: same inputs always produce same outputs
+- Listed failures are explicit and typed
+- Fail-closed within the lock check: no silent fallbacks
+- Deterministic for the same input bytes
+
+---
+
+## What this does not prove
+
+This repository does not prove adoption, certification, standardisation, production readiness, or path-universal deployment coverage.
+
+It is a scoped primitive that demonstrates one property: content hash + version must match the lockfile exactly before execution is allowed on the demonstrated path.
+
+Failures outside that surface are out of scope, including:
+
+- semantic correctness of the rules inside the invariant file
+- governance integration around the lock check
+- runtime adoption in a larger system
+- protection against mutation paths that do not call this verifier
 
 ---
 
